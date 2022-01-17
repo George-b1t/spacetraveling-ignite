@@ -2,6 +2,23 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: "Inter", sans-serif;
+  text-decoration: none;
 }
 
-// TODO
+:root {
+  --highlight: #FF57B2;
+  --heading: #F8F8F8;
+  --background: #1A1D23;
+  --info: #BBBBBB;
+  --body: #D7D7D7;
+}
+
+html {
+  background-color: var(--background);
+}
+
+body {
+  max-width: 700px;
+  margin: 0 auto;
+}

@@ -1,1 +1,78 @@
-// TODO
+.container {
+  padding: 2.5rem 0 4.5rem 0;
+
+  .fieldPosts {
+    margin-top: 1.6rem;
+  }
+
+  .loadMorePosts {
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+
+    cursor: pointer;
+
+    color: var(--highlight);
+
+    transition: .2s ease;
+
+    &:hover {
+      filter: brightness(.8);
+    }
+  }
+}
+
+.post {
+  h2 {
+    color: var(--heading);
+
+    font-size: 28px;
+    letter-spacing: -0.5px;
+
+    margin-bottom: 0.5rem;
+  }
+
+  > p {
+    color: var(--body);
+
+    font-size: 18px;
+
+    margin-bottom: 1.5rem;
+  }
+
+  section {
+    display: flex;
+    gap: 1.6rem;
+    margin-bottom: 2.5rem;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      p, time {
+        font-size: 14px;
+        line-height: 17px;
+      }
+
+      p, time, svg {
+        color: var(--info);
+      }
+    }
+  }
+
+  h2 {
+    transition: .2s ease;
+  }
+
+  &:hover {
+    h2 {
+      color: var(--highlight);
+    }
+  }
+}
