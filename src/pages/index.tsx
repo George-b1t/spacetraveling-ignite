@@ -2,6 +2,7 @@ import { GetStaticProps } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
 import Header from '../components/Header';
+import Prismic from '@prismicio/client';
 
 import { FiUser, FiCalendar } from 'react-icons/fi';
 
@@ -9,6 +10,8 @@ import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 
 interface Post {
   uid?: string;
@@ -29,23 +32,13 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home() {
-  const post = {
-    data: {
-      author: "George Soares",
-      subtitle: "Tudo sobre como criar a sua primeira aplicação utilizando Create React App",
-      title: "Criando um app CRA do zero"
-    },
-    first_publication_date: "19 Abr 2021",
-    uid: "aprendendo-teste"
-  };
-  const [ posts, setPosts ] = useState<Post[]>([post, post, post, post, post, post]);
+export default function Home({ postsPagination }: HomeProps) {
 
   return (
     <div className={ styles.container }>
       <Header />
       <div className={ styles.fieldPosts }>
-        {posts.map(post => {
+        {postsPagination.results.map(post => {
           return (
             <Link href={`/post/${post.uid}`}>
               <a className={ styles.post }>
@@ -71,9 +64,43 @@ export default function Home() {
   );
 };
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
 
-//   // TODO
-// };
+  const response = await prismic.query([
+    Prismic.predicates.at('document.type', 'post')
+  ], {
+    pageSize: 100
+  });
+
+  const filteredResult = response.results.map(item => {
+    const formatedDate = format(new Date(item.first_publication_date), 'PP', {
+      locale: ptBR
+    });
+
+    const arrDate = formatedDate.split(' ');
+
+    for (var i = 0; i < arrDate.length; i++) {
+      arrDate[i] = arrDate[i].charAt(0).toUpperCase() + arrDate[i].slice(1);
+    };
+    
+    return {
+      data: {
+        author: item.data.author,
+        title: item.data.title,
+        subtitle: item.data.subtitle
+      },
+      uid: item.uid,
+      first_publication_date: arrDate.join(" ")
+    }
+  });
+
+  return {
+    props: {
+      postsPagination: {
+        results: filteredResult,
+        next_page: response.next_page
+      }
+    }
+  };
+};
