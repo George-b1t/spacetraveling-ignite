@@ -37,10 +37,10 @@ export default function Home({ postsPagination }: HomeProps) {
   return (
     <div className={ styles.container }>
       <Header />
-      <div className={ styles.fieldPosts }>
+      <div className={ `${styles.fieldPosts} ${commonStyles.center700}` }>
         {postsPagination.results.map(post => {
           return (
-            <Link href={`/post/${post.uid}`}>
+            <Link key={post.uid} href={`/post/${post.uid}`}>
               <a className={ styles.post }>
                 <h2>{post.data.title}</h2>
                 <p>{post.data.subtitle}</p>
@@ -59,7 +59,7 @@ export default function Home({ postsPagination }: HomeProps) {
           );
         })}
       </div>
-      <strong className={ styles.loadMorePosts }>Carregar mais posts</strong>
+      <strong className={ `${styles.loadMorePosts} ${commonStyles.center700}` }>Carregar mais posts</strong>
     </div>
   );
 };
