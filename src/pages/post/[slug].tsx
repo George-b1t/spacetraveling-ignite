@@ -105,7 +105,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   const paths = posts.results.map(i => ({
     params: {
-      slug: i.slugs[0]
+      slug: i.uid
     }
   }));
 
