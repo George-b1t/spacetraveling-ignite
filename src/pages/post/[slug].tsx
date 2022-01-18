@@ -4,6 +4,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { RichText } from 'prismic-dom';
 import { useEffect, useState } from 'react';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
+import Prismic from '@prismicio/client';
 import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
@@ -94,12 +95,22 @@ export default function Post({ post }: PostProps) {
   );
 };
 
-export const getStaticPaths = async () => {
-  // const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
+export const getStaticPaths: GetStaticPaths = async () => {
+  const prismic = getPrismicClient();
+  const posts = await prismic.query([
+    Prismic.predicates.at('document.type', 'post')
+  ], {
+    pageSize: 100
+  });
+
+  const paths = posts.results.map(i => ({
+    params: {
+      slug: i.slugs[0]
+    }
+  }));
 
   return {
-    paths: [],
+    paths,
     fallback: 'blocking'
   };
 };
@@ -111,7 +122,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const response = await prismic.getByUID('post', String(slug), {});
 
-  const formatedDate = format(new Date(response.last_publication_date), 'PP', {
+  const formatedDate = format(new Date(response.first_publication_date), 'PP', {
     locale: ptBR
   });
 

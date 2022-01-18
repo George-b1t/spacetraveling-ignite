@@ -1,6 +1,5 @@
 import { GetStaticProps } from 'next';
 import Link from 'next/link';
-import { useState } from 'react';
 import Header from '../components/Header';
 import Prismic from '@prismicio/client';
 
