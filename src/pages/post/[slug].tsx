@@ -11,6 +11,7 @@ import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import { useRouter } from 'next/router';
 
 interface Post {
   first_publication_date: string | null;
@@ -45,6 +46,13 @@ interface PostProps {
 
 export default function Post({ post }: PostProps) {
   const [ time, setTime ] = useState("");
+  const [ date, setDate ] = useState("");
+
+  const router = useRouter()
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  };
 
   useEffect(() => {
     let wordCounter = 0;
@@ -55,7 +63,13 @@ export default function Post({ post }: PostProps) {
       wordCounter += RichText.asText(item.body).split("-").length;
     });
 
-    setTime((wordCounter / 200).toFixed(0));
+    setTime((wordCounter / 200 + 1).toFixed(0));
+
+    const formatedDate = format(new Date(post.first_publication_date), 'PP', {
+      locale: ptBR
+    });
+  
+    setDate(formatedDate);
   }, []);
 
   return (
@@ -68,7 +82,7 @@ export default function Post({ post }: PostProps) {
           <section>
             <div>
               <FiCalendar />
-              <time>{post.first_publication_date}</time>
+              <time>{date}</time>
             </div>
             <div>
               <FiUser />
@@ -100,7 +114,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await prismic.query([
     Prismic.predicates.at('document.type', 'post')
   ], {
-    pageSize: 100
+    pageSize: 1
   });
 
   const paths = posts.results.map(i => ({
@@ -111,7 +125,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths,
-    fallback: 'blocking'
+    fallback: true
   };
 };
 
@@ -122,21 +136,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const response = await prismic.getByUID('post', String(slug), {});
 
-  const formatedDate = format(new Date(response.first_publication_date), 'PP', {
-    locale: ptBR
-  });
-
-  const arrDate = formatedDate.split(' ');
-
-  for (var i = 0; i < arrDate.length; i++) {
-    arrDate[i] = arrDate[i].charAt(0).toUpperCase() + arrDate[i].slice(1);
-  };
-
   const post = {
-    slug,
-    first_publication_date: arrDate.join(" "),
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       content: response.data.content,
       author: response.data.author,
       banner: response.data.banner
@@ -147,6 +152,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       post
     },
-    revalidate: 60 * 30
+    revalidate: 1
   }
 };

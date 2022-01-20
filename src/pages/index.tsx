@@ -11,6 +11,7 @@ import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
+import { useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -32,12 +33,24 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [ posts, setPosts ] = useState(postsPagination.results);
+  const [ nextPage, setNextPage ] = useState(postsPagination.next_page);
+
+  async function getMorePosts() {
+    if ( !postsPagination.next_page ) return;
+
+    fetch(postsPagination.next_page).then(async (res) => {
+      const newPosts = (await res.json());
+      setNextPage(newPosts.nex_page);
+      setPosts(o => [...o, ...newPosts.results]);
+    });
+  };
 
   return (
     <div className={ styles.container }>
       <Header />
       <div className={ `${styles.fieldPosts} ${commonStyles.center700}` }>
-        {postsPagination.results.map(post => {
+        {posts.map(post => {
           return (
             <Link key={post.uid} href={`/post/${post.uid}`}>
               <a className={ styles.post }>
@@ -46,7 +59,13 @@ export default function Home({ postsPagination }: HomeProps) {
                 <section>
                   <div>
                     <FiCalendar />
-                    <time>{post.first_publication_date}</time>
+                    <time>
+                      {
+                        format(new Date(post.first_publication_date), 'PP', {
+                          locale: ptBR
+                        })
+                      }
+                    </time>
                   </div>
                   <div>
                     <FiUser />
@@ -58,7 +77,7 @@ export default function Home({ postsPagination }: HomeProps) {
           );
         })}
       </div>
-      <strong className={ `${styles.loadMorePosts} ${commonStyles.center700}` }>Carregar mais posts</strong>
+      {nextPage && <strong onClick={getMorePosts} className={ `${styles.loadMorePosts} ${commonStyles.center700}` }>Carregar mais posts</strong>}
     </div>
   );
 };
@@ -69,20 +88,10 @@ export const getStaticProps: GetStaticProps = async () => {
   const response = await prismic.query([
     Prismic.predicates.at('document.type', 'post')
   ], {
-    pageSize: 100
+    pageSize: 1
   });
 
   const filteredResult = response.results.map(item => {
-    const formatedDate = format(new Date(item.first_publication_date), 'PP', {
-      locale: ptBR
-    });
-
-    const arrDate = formatedDate.split(' ');
-
-    for (var i = 0; i < arrDate.length; i++) {
-      arrDate[i] = arrDate[i].charAt(0).toUpperCase() + arrDate[i].slice(1);
-    };
-    
     return {
       data: {
         author: item.data.author,
@@ -90,7 +99,7 @@ export const getStaticProps: GetStaticProps = async () => {
         subtitle: item.data.subtitle
       },
       uid: item.uid,
-      first_publication_date: arrDate.join(" ")
+      first_publication_date: item.first_publication_date
     }
   });
 
