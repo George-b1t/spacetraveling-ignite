@@ -37,11 +37,11 @@ export default function Home({ postsPagination }: HomeProps) {
   const [ nextPage, setNextPage ] = useState(postsPagination.next_page);
 
   async function getMorePosts() {
-    if ( !postsPagination.next_page ) return;
+    if ( !nextPage ) return;
 
-    fetch(postsPagination.next_page).then(async (res) => {
+    fetch(nextPage).then(async (res) => {
       const newPosts = (await res.json());
-      setNextPage(newPosts.nex_page);
+      setNextPage(newPosts.next_page);
       setPosts(o => [...o, ...newPosts.results]);
     });
   };
